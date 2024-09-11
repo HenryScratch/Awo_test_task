@@ -1,0 +1,4 @@
+#!/bin/bash
+set -a
+source .env
+.venv/bin/python3 -m router.cli $@  2>&1 | tee /tmp/router.log

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  router:
+    build:
+      context: .
+      dockerfile: Dockerfile.router
+    container_name: router
+    hostname: router
+    command: python -m router.cli --port 9090 --host 0.0.0.0
+    environment:
+      - PYTHONPATH=/app/src
+    volumes:
+      - .:/app
+    ports:
+      - "9090:9090"
+    depends_on:
+      - redis
+
+  syncer:
+    build:
+      context: .
+      dockerfile: Dockerfile.syncer
+    container_name: syncer
+    command: python /app/tools/syncaccs.py https://analitika-wb-ozon.pro/get_all_tokens router:9090/router/accounts auth 30 100
+    volumes:
+      - .:/app
+    depends_on:
+      - router
+
+  redis:
+    image: redis:alpine
+    container_name: ro_redis

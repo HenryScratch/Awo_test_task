@@ -278,7 +278,10 @@ class RedisCache(BaseCache):
 
     def _get_size(self) -> int:
         return self._client.dbsize()
-    
+
+    def get_size(self) -> int:
+        return self._client.dbsize()
+
 
 class HTTPCache(RedisCache):
 

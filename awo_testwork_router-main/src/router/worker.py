@@ -72,6 +72,10 @@ class AsyncWorker:
         return self._account
 
     @property
+    def manager(self) -> 'Manager':
+        return self._manager
+
+    @property
     def state(self) -> WorkerState:
         return self._state
 

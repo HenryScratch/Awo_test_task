@@ -137,13 +137,7 @@ class Manager:
             since = monotonic()
             aws = [
                 asyncio.create_task(worker.wait())
-                for worker in sorted(
-                    candidates,
-                    key=lambda _: (
-                        _.account.cost,
-                        _.account.last_req_timestamp or self.nodatetime,
-                    )
-                )
+                for worker in sorted(candidates, key=self._sorting_key)
             ]
             done, pending = await asyncio.wait(
                 aws,
@@ -261,3 +255,14 @@ class Manager:
     #    for item in self._workers_queue._queue:
     #        if item.worker is worker:
     #            item.cancelled = True
+
+    def _sorting_key(self, worker: MPStatsWorker):
+        """
+        :param worker: An instance of the MPStatsWorker class containing account and request information.
+        :return: A tuple containing three elements used for sorting:
+        """
+        account = worker.account
+        last_req_time = account.last_req_timestamp or self.nodatetime
+        cache_size = worker.manager.bind_requests_cache.size
+
+        return account.cost, last_req_time, cache_size

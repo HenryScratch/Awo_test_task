@@ -8,6 +8,7 @@ from .client import AsyncAPIClient, APIClientError
 from .models import WorkerState, Account, APICooldownParam, APICooldownMode
 # from .queue import CostBasedPriorityItem
 from .log import get_logger
+from .manager import Manager
 
 
 class WorkerError(Exception): ...
@@ -70,6 +71,10 @@ class AsyncWorker:
     @property
     def account(self) -> Account:
         return self._account
+
+    @property
+    def manager(self) -> Manager:
+        return self._manager
 
     @property
     def state(self) -> WorkerState:

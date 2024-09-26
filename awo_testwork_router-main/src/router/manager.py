@@ -140,6 +140,7 @@ class Manager:
                 for worker in sorted(
                     candidates,
                     key=lambda _: (
+                        len(_.account.api_bind_requests_path_re),
                         _.account.cost,
                         _.account.last_req_timestamp or self.nodatetime,
                     )

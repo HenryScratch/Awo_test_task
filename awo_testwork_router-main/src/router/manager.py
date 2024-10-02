@@ -142,6 +142,7 @@ class Manager:
                     key=lambda _: (
                         _.account.cost,
                         _.account.last_req_timestamp or self.nodatetime,
+                        self.bind_requests_cache.get(task.bind_key) is None if hasattr(task, "bind_key") else True
                     )
                 )
             ]

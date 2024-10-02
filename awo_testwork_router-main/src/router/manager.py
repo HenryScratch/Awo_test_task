@@ -135,15 +135,10 @@ class Manager:
                 raise ManagerError(f'no workers available: {task}')
 
             since = monotonic()
+            sorted_workers = sorted(candidates, key=lambda worker: self._sorting_key(worker, task))
             aws = [
                 asyncio.create_task(worker.wait())
-                for worker in sorted(
-                    candidates,
-                    key=lambda _: (
-                        _.account.cost,
-                        _.account.last_req_timestamp or self.nodatetime,
-                    )
-                )
+                for worker in sorted_workers
             ]
             done, pending = await asyncio.wait(
                 aws,
@@ -261,3 +256,14 @@ class Manager:
     #    for item in self._workers_queue._queue:
     #        if item.worker is worker:
     #            item.cancelled = True
+
+    def _sorting_key(self, worker: MPStatsWorker, task: Task):
+        """
+        :param worker: An instance of the MPStatsWorker class containing account and request information.
+        :return: A tuple containing three elements used for sorting:
+        """
+        account = worker.account
+        last_req_time = account.last_req_timestamp or self.nodatetime
+        bind_key_check = not hasattr(task, "bind_key") or self.bind_requests_cache.get(task.bind_key) is None
+
+        return account.cost, last_req_time, bind_key_check

@@ -140,6 +140,7 @@ class Manager:
                 for worker in sorted(
                     candidates,
                     key=lambda _: (
+                        sum(1 for task in worker.task_queue._queue if hasattr(task, 'bind_key')),
                         _.account.cost,
                         _.account.last_req_timestamp or self.nodatetime,
                     )

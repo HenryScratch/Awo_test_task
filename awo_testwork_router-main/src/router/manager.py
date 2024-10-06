@@ -142,6 +142,7 @@ class Manager:
                     key=lambda _: (
                         _.account.cost,
                         _.account.last_req_timestamp or self.nodatetime,
+                        self.bind_requests_cache.count_keys_for_value(_.account.email),
                     )
                 )
             ]

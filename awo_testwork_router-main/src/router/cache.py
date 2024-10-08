@@ -278,7 +278,16 @@ class RedisCache(BaseCache):
 
     def _get_size(self) -> int:
         return self._client.dbsize()
-    
+
+    def count_keys(self, value: Any) -> int:
+        keys = list(self._client.scan_iter(match='bind|*'))
+        if not keys:
+            return 0
+
+        values = self._client.mget(keys)
+
+        return sum(1 for v in values if v == value)
+
 
 class HTTPCache(RedisCache):
 

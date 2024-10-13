@@ -142,6 +142,8 @@ class Manager:
                     key=lambda _: (
                         _.account.cost,
                         _.account.last_req_timestamp or self.nodatetime,
+                        _.manager.bind_requests_cache.size,
+                        self.bind_requests_cache.get(task.bind_key) is None,
                     )
                 )
             ]

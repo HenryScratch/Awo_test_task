@@ -7,6 +7,7 @@ from copy import deepcopy
 from time import monotonic
 from datetime import datetime, timezone
 from collections import Counter
+from typing import Tuple
 
 from .task import Task
 from .cache import RedisCache
@@ -137,13 +138,7 @@ class Manager:
             since = monotonic()
             aws = [
                 asyncio.create_task(worker.wait())
-                for worker in sorted(
-                    candidates,
-                    key=lambda _: (
-                        _.account.cost,
-                        _.account.last_req_timestamp or self.nodatetime,
-                    )
-                )
+                for worker in sorted(candidates, key=sort_key)
             ]
             done, pending = await asyncio.wait(
                 aws,
@@ -261,3 +256,11 @@ class Manager:
     #    for item in self._workers_queue._queue:
     #        if item.worker is worker:
     #            item.cancelled = True
+
+    def sort_key(self, worker: MPStatsWorker) -> Tuple[float, datetime, int]:
+        account = worker.account
+        return (
+            account.cost,
+            account.last_req_timestamp or self.nodatetime,
+            self.bind_requests_cache.count_keys(account.email),
+        )

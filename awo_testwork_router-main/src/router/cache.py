@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Any
 from time import monotonic
 from hashlib import blake2b
@@ -229,6 +230,10 @@ class InMemoryCache(BaseCache):
 
 class RedisCache(BaseCache):
 
+    @lru_cache(maxsize=1)
+    def get_cached_keys(self):
+        return list(self._client.scan_iter(match='bind|*'))
+
     def _init_data_store(self) -> None:
         self._client = redis.StrictRedis(host=REDIS_CONFIG['host'], port=REDIS_CONFIG['port'], db=0)
 
@@ -278,7 +283,16 @@ class RedisCache(BaseCache):
 
     def _get_size(self) -> int:
         return self._client.dbsize()
-    
+
+    def count_keys(self, value: Any) -> int:
+        keys = self.get_cached_keys()
+        if not keys:
+            return 0
+
+        values = self._client.mget(keys)
+
+        return sum(1 for v in values if v == value)
+
 
 class HTTPCache(RedisCache):
 
